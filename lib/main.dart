@@ -12,7 +12,7 @@ Future<void> main() async {
   // Open the main database box
   await Hive.openBox('database');
 
-  // Load saved address from Hive
+  // Load saved address frsdsdddsdsdom Hive
   await AddressStore.instance.init();
 
   runApp(const App());
