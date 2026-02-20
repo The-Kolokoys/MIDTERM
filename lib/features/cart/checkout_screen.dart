@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import '../../core/biometrics.dart';
 import '../../core/constants/colors.dart';
 import '../../state/cart_provider.dart';
 import 'payment_webview_screen.dart';
@@ -52,6 +53,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           child: const Text('Cancel'),
         ),
       ),
+    );
+  }
+
+  Future<void> _placeOrder() async {
+    // 1. Biometrics Confirmation FIRST
+    final okAvailable = await Biometrics.isAvailable();
+    if (okAvailable) {
+      final authenticated = await Biometrics.authenticate(reason: "Confirm order and proceed to payment");
+      if (!authenticated) return;
+    }
+
+    // 2. If biometrics OK, then go to Xendit Webview
+    final deliveryFee = deliveryOption.contains('₱70') ? 70.0 : deliveryOption.contains('₱35') ? 35.0 : 50.0;
+    final grandTotal = cart.total + deliveryFee;
+
+    if (!mounted) return;
+    Navigator.of(context).push(
+      CupertinoPageRoute(builder: (_) => PaymentWebviewScreen(amount: grandTotal)),
     );
   }
 
@@ -137,11 +156,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(height: 14),
             CupertinoButton.filled(
-              onPressed: () {
-                Navigator.of(context).push(
-                  CupertinoPageRoute(builder: (_) => PaymentWebviewScreen(amount: grandTotal)),
-                );
-              },
+              onPressed: _placeOrder,
               child: const Text('Place order'),
             ),
           ],

@@ -1,6 +1,4 @@
 import 'package:flutter/cupertino.dart';
-
-import '../../core/biometrics.dart';
 import '../../core/constants/colors.dart';
 import '../../models/order.dart';
 import '../../state/cart_provider.dart';
@@ -16,64 +14,36 @@ class PaymentWebviewScreen extends StatefulWidget {
 }
 
 class _PaymentWebviewScreenState extends State<PaymentWebviewScreen> {
-  bool isCashless = true;
   bool _processing = false;
+  bool _isPaid = false;
 
   /// ===============================
-  /// BIOMETRIC AUTH (CONVERGE STYLE)
+  /// SIMULATE EXTERNAL PAYMENT (XENDIT EMULATOR)
   /// ===============================
-  Future<bool> _authenticate() async {
-    final okAvailable = await Biometrics.isAvailable();
-    if (!okAvailable) {
-      if (!mounted) return false;
-      showCupertinoDialog(
-        context: context,
-        builder: (_) => CupertinoAlertDialog(
-          title: const Text("Biometrics Error"),
-          content: const Text(
-            "Biometrics not available or not set up on this device.",
-          ),
-          actions: [
-            CupertinoDialogAction(
-              isDefaultAction: true,
-              child: const Text("OK"),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      );
-      return false;
-    }
-
-    return Biometrics.authenticate(reason: "Confirm payment");
-  }
-
-  /// ===============================
-  /// CONFIRM PAYMENT
-  /// ===============================
-  Future<void> _confirmPayment() async {
-    if (_processing) return;
+  Future<void> _processPayment() async {
     setState(() => _processing = true);
+    
+    // Simulate network delay to the payment gateway
+    await Future.delayed(const Duration(seconds: 3));
 
-    // If cashless, require biometrics confirm. If cash, skip biometrics.
-    if (isCashless) {
-      final ok = await _authenticate();
-      if (!mounted) return;
-      if (!ok) {
-        setState(() => _processing = false);
-        return;
-      }
-    }
+    if (!mounted) return;
+    setState(() {
+      _processing = false;
+      _isPaid = true;
+    });
+
+    // Show success for a brief moment then go to tracking
+    await Future.delayed(const Duration(seconds: 2));
 
     final cart = CartStore.instance;
     final now = DateTime.now();
 
     final order = Order(
       orderId: 'ORD-${now.millisecondsSinceEpoch.toString().substring(7)}',
-      restaurantName: 'Mock Restaurant',
+      restaurantName: 'GrabFood Order',
       total: widget.amount,
       createdAtIso: now.toIso8601String(),
-      status: isCashless ? 'Paid' : 'Cash on Delivery',
+      status: 'Paid',
     );
 
     OrderStore.instance.addOrder(order);
@@ -86,163 +56,133 @@ class _PaymentWebviewScreenState extends State<PaymentWebviewScreen> {
     );
   }
 
-  /// ===============================
-  /// UI
-  /// ===============================
   @override
   Widget build(BuildContext context) {
-    final amount = widget.amount;
-
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Payment'),
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(_isPaid ? 'Payment Successful' : 'Xendit Checkout'),
+        automaticallyImplyLeading: !_processing && !_isPaid,
       ),
-      backgroundColor: CupertinoColors.systemGroupedBackground,
+      backgroundColor: const Color(0xFFF3F4F6),
       child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(12),
-          children: [
-            /// XENDIT BOX
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: CupertinoColors.systemBackground,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Xendit (Mock Payment)',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'This is UI only. Backend integration will be added later.',
-                    style: TextStyle(
-                      color: CupertinoColors.systemGrey,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Amount',
-                        style: TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                      Text(
-                        '₱${amount.toStringAsFixed(2)}',
-                        style: const TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            /// CASH OPTION
-            _methodTile(
-              title: 'Cash',
-              subtitle: 'Pay upon arrival (COD)',
-              selected: !isCashless,
-              onTap: () => setState(() => isCashless = false),
-            ),
-
-            /// CASHLESS OPTION
-            _methodTile(
-              title: 'Cashless',
-              subtitle: 'Online payment via Xendit (Mock)',
-              selected: isCashless,
-              onTap: () => setState(() => isCashless = true),
-            ),
-
-            const SizedBox(height: 16),
-
-            /// CONFIRM BUTTON
-            CupertinoButton(
-              color: AppColors.grabGreen,
-              onPressed: _processing ? null : _confirmPayment,
-              child: _processing
-                  ? const CupertinoActivityIndicator()
-                  : const Text('Confirm Payment'),
-            ),
-
-            const SizedBox(height: 10),
-
-            CupertinoButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-          ],
+        child: Center(
+          child: _isPaid ? _buildSuccessUI() : _buildEmulatorUI(),
         ),
       ),
     );
   }
 
-  /// ===============================
-  /// METHOD TILE
-  /// ===============================
-  Widget _methodTile({
-    required String title,
-    required String subtitle,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: CupertinoColors.systemBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? AppColors.grabGreen : AppColors.cardBorder,
-            width: selected ? 1.4 : 1.0,
+  Widget _buildEmulatorUI() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: CupertinoColors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: CupertinoColors.systemGrey.withAlpha(50),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              selected
-                  ? CupertinoIcons.checkmark_circle_fill
-                  : CupertinoIcons.circle,
-              color: selected ? AppColors.grabGreen : CupertinoColors.systemGrey,
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Logo Simulation
+          Container(
+            height: 40,
+            width: 120,
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1),
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: CupertinoColors.systemGrey,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+            child: const Center(
+              child: Text(
+                'Xendit',
+                style: TextStyle(
+                  color: CupertinoColors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
             ),
-            const Icon(
-              CupertinoIcons.chevron_right,
-              color: CupertinoColors.systemGrey,
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Payment Confirmation',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Order #PAY-${DateTime.now().millisecondsSinceEpoch.toString().substring(9)}',
+            style: const TextStyle(color: CupertinoColors.systemGrey, fontSize: 14),
+          ),
+          
+          // REPLACED MATERIAL DIVIDER WITH CUPERTINO SEPARATOR
+          Container(
+            height: 1,
+            color: CupertinoColors.separator,
+            margin: const EdgeInsets.symmetric(vertical: 20),
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Amount to Pay', style: TextStyle(color: CupertinoColors.systemGrey)),
+              Text(
+                '₱${widget.amount.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF1F2937)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 30),
+          SizedBox(
+            width: double.infinity,
+            child: CupertinoButton(
+              color: const Color(0xFF6366F1),
+              onPressed: _processing ? null : _processPayment,
+              child: _processing
+                  ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                  : const Text('Confirm Payment', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          if (!_processing)
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: CupertinoColors.systemGrey)),
+            ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildSuccessUI() {
+    return const Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          CupertinoIcons.checkmark_circle_fill,
+          color: AppColors.grabGreen,
+          size: 100,
+        ),
+        SizedBox(height: 20),
+        Text(
+          'Payment Received!',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10),
+        Text(
+          'Redirecting to tracking...',
+          style: TextStyle(color: CupertinoColors.systemGrey),
+        ),
+        SizedBox(height: 40),
+        CupertinoActivityIndicator(),
+      ],
     );
   }
 }
