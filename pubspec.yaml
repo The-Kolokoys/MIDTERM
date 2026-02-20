@@ -32,10 +32,21 @@ dependencies:
 
   # ✅ REAL MAPS (Using Google Maps ONLY)
   google_maps_flutter: ^2.7.0
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons:
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/food_logo.png
+  windows:
+    generate: true
+    image_path: assets/food_logo.png
+    size: 50
+
 
   flutter_lints: ^4.0.0
   
