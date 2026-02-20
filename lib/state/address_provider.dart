@@ -8,6 +8,7 @@ class AddressStore extends ChangeNotifier {
   static const _boxName = "profile_box";
   static const _keySavedAddress = "saved_address";
 
+
   SavedAddress? _saved;
 
   SavedAddress? get saved => _saved;
