@@ -26,6 +26,7 @@ class AddressStore extends ChangeNotifier {
     notifyListeners();
   }
 
+
   Future<void> clear() async {
     final box = await Hive.openBox(_boxName);
     await box.delete(_keySavedAddress);
