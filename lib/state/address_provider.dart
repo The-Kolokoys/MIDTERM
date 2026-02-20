@@ -5,7 +5,6 @@ import '../models/saved_address.dart';
 class AddressStore extends ChangeNotifier {
   AddressStore._();
   static final AddressStore instance = AddressStore._();
-
   static const _boxName = "profile_box";
   static const _keySavedAddress = "saved_address";
 
