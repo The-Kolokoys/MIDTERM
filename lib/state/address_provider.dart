@@ -18,6 +18,7 @@ class AddressStore extends ChangeNotifier {
     _saved = SavedAddress.fromJson(raw);
   }
 
+
   Future<void> save(SavedAddress addr) async {
     final box = await Hive.openBox(_boxName);
     await box.put(_keySavedAddress, addr.toJson());
