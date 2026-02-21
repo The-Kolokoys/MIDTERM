@@ -3,7 +3,6 @@ import '../../core/biometrics.dart';
 import '../../core/constants/colors.dart';
 import '../../state/cart_provider.dart';
 import 'payment_webview_screen.dart';
-import 'package:hive/hive.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -93,20 +92,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           padding: const EdgeInsets.all(12),
           children: [
             _card(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Deliver to', style: TextStyle(fontWeight: FontWeight.w900)),
                 SizedBox(height: 6),
-                Text(
-                  (() {
-                    final data = Hive.box('addresses').get('default');
-                    final addr = data?.addressLine;
-
-                    return (addr != null && addr.toString().isNotEmpty)
-                        ? addr.toString()
-                        : 'Enter an address (UI only for now)';
-                  })(),
-                  style: const TextStyle(color: CupertinoColors.systemGrey),
-                ),
+                Text('Enter an address (UI only for now)', style: TextStyle(color: CupertinoColors.systemGrey)),
               ]),
             ),
             const SizedBox(height: 10),
