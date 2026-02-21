@@ -18,7 +18,6 @@ class CartStore extends ChangeNotifier {
   int get count => _items.fold(0, (sum, item) => sum + item.qty);
   double get total => _items.fold(0, (sum, item) => sum + (item.price * item.qty));
 
-  /// ✅ Fixed add method to match your UI usage
   void add(CartItem item, [String? fromRestaurant]) {
     if (_items.isEmpty && fromRestaurant != null) {
       restaurantName = fromRestaurant;
@@ -35,7 +34,6 @@ class CartStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// ✅ Added decrease method to fix the error in UI
   void decrease(String id) {
     for (int i = 0; i < _items.length; i++) {
       if (_items[i].id == id) {

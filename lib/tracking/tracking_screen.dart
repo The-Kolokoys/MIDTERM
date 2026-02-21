@@ -33,29 +33,44 @@ class _TrackingScreenState extends State<TrackingScreen> {
   }
 
   /// SYNCHRONIZED SIMULATION FOR MIDTERM REQUIREMENTS
+  bool _isSaved = false;
+
   void _startMidtermSimulation() {
-    _simulationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _simulationTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (!mounted) return;
 
-      final elapsedSeconds = DateTime.now().difference(_startTime).inSeconds;
+      final elapsedSeconds =
+          DateTime.now().difference(_startTime).inSeconds;
 
-      setState(() {
-        if (elapsedSeconds < 60) {
-          // PHASE 1 (0-60s): PREPARING
+      if (elapsedSeconds < 60) {
+        setState(() {
           _status = "Order received by merchant / preparing food";
-          _progress = 0.0; // Rider stays at the merchant
-        } else if (elapsedSeconds < 120) {
-          // PHASE 2 (60-120s): ON THE WAY
+          _progress = 0.0;
+        });
+      } else if (elapsedSeconds < 120) {
+        setState(() {
           _status = "Delivery is on the way";
-          // Rider moves from 0% to 100% within this 60-second window
           _progress = (elapsedSeconds - 60) / 60.0;
-        } else {
-          // PHASE 3 (120s+): DELIVERED
+        });
+      } else {
+        // DELIVERY COMPLETE
+        _simulationTimer?.cancel();
+
+        setState(() {
           _status = "Order Received";
           _progress = 1.0;
-          _simulationTimer?.cancel(); // Stop the simulation
-        }
-      });
+        });
+
+        // AUTO CLOSE AFTER 10 SECONDS
+        Future.delayed(const Duration(seconds: 10), () {
+          if (!mounted) return;
+
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/home',
+                (route) => false,
+          );
+        });
+      }
     });
   }
 
@@ -145,7 +160,7 @@ class _StatusCard extends StatelessWidget {
         children: [
           Text(status, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 15),
-          CupertinoProgressBar(value: progress), 
+          CupertinoProgressBar(value: progress),
         ],
       ),
     );
