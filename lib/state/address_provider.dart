@@ -5,9 +5,9 @@ import '../models/saved_address.dart';
 class AddressStore extends ChangeNotifier {
   AddressStore._();
   static final AddressStore instance = AddressStore._();
-
   static const _boxName = "profile_box";
   static const _keySavedAddress = "saved_address";
+
 
   SavedAddress? _saved;
 
@@ -25,6 +25,7 @@ class AddressStore extends ChangeNotifier {
     _saved = addr;
     notifyListeners();
   }
+
 
   Future<void> clear() async {
     final box = await Hive.openBox(_boxName);

@@ -95,7 +95,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('Deliver to', style: TextStyle(fontWeight: FontWeight.w900)),
                 SizedBox(height: 6),
-                Text('Enter an address (UI only for now)', style: TextStyle(color: CupertinoColors.systemGrey)),
+                Text('Bahay ni Sir Ronnie', style: TextStyle(color: CupertinoColors.systemGrey)),
               ]),
             ),
             const SizedBox(height: 10),

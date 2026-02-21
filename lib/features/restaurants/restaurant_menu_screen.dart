@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import '../../core/constants/colors.dart';
 import '../../core/widgets/safe_image.dart';
-import '../../models/cart_item.dart';
 import '../../models/restaurant.dart';
 import '../../state/cart_provider.dart';
 import '../cart/cart_screen.dart';
+import '../../models/menu_item.dart';
+import '../../models/cart_item.dart';
 
 class RestaurantMenuScreen extends StatefulWidget {
   const RestaurantMenuScreen({super.key, required this.restaurant});
@@ -16,6 +17,48 @@ class RestaurantMenuScreen extends StatefulWidget {
 
 class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
   final cart = CartStore.instance;
+
+  void _addItem(MenuItem m) {
+    final currentRestaurant = cart.restaurantName;
+
+    // ✅ CHECK LOGIC: If cart is NOT empty and restaurant is DIFFERENT
+    if (currentRestaurant != null && currentRestaurant != widget.restaurant.name) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text('Change Restaurant?'),
+          content: Text(
+            'Your basket contains items from $currentRestaurant. '
+            'Do you want to clear your basket and add items from ${widget.restaurant.name} instead?',
+          ),
+          actions: [
+            CupertinoDialogAction(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              child: const Text('Confirm'),
+              onPressed: () {
+                setState(() {
+                  cart.clear();
+                  // ✅ FIXED: Convert MenuItem to CartItem before adding
+                  cart.add(CartItem(id: m.id, name: m.name, price: m.price, image: m.image), widget.restaurant.name);
+                });
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      );
+    } else {
+      // ✅ NORMAL ADD: Same restaurant or empty cart
+      setState(() {
+        // ✅ FIXED: Convert MenuItem to CartItem before adding
+        cart.add(CartItem(id: m.id, name: m.name, price: m.price, image: m.image), widget.restaurant.name);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,11 +147,7 @@ class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           color: CupertinoColors.systemGrey6,
                           borderRadius: BorderRadius.circular(14),
-                          onPressed: () {
-                            setState(() {
-                              cart.add(CartItem(id: m.id, name: m.name, price: m.price, image: m.image));
-                            });
-                          },
+                          onPressed: () => _addItem(m),
                           child: const Text('Add', style: TextStyle(fontWeight: FontWeight.w800)),
                         ),
                       ],
