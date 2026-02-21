@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:hive/hive.dart'; // ✅ added so we can read the saved address
+
 import '../../core/constants/colors.dart';
 import '../../core/widgets/safe_image.dart';
 import '../restaurants/restaurant_data.dart';
@@ -122,13 +124,32 @@ class _Header extends StatelessWidget {
             children: [
               const Icon(CupertinoIcons.location_solid, color: CupertinoColors.white, size: 18),
               const SizedBox(width: 6),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('DELIVER TO', style: TextStyle(color: CupertinoColors.white, fontSize: 11, fontWeight: FontWeight.w800)),
-                    SizedBox(height: 2),
-                    Text('Enter an address', style: TextStyle(color: CupertinoColors.white, fontSize: 16, fontWeight: FontWeight.w900)),
+                    const Text(
+                      'DELIVER TO',
+                      style: TextStyle(color: CupertinoColors.white, fontSize: 11, fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 2),
+
+                    // ✅ ONLY CHANGE: ternary showing Hive address if not null
+                    Text(
+                      (() {
+                        final data = Hive.box('addresses').get('default');
+                        final addr = data?.addressLine;
+
+                        return (addr != null && addr.toString().isNotEmpty)
+                            ? addr.toString()
+                            : 'Enter an address';
+                      })(),
+                      style: const TextStyle(
+                        color: CupertinoColors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ],
                 ),
               ),
