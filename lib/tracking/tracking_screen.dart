@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../core/constants/colors.dart';
-import 'package:untitled2/features/home/home_screen.dart';
+import 'package:untitled2/features/home/home_tabs.dart';
 
 class TrackingScreen extends StatefulWidget {
   const TrackingScreen({super.key});
@@ -67,7 +67,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
             Navigator.of(context).pushAndRemoveUntil(
               CupertinoPageRoute(
-                builder: (context) => const HomeScreen(),
+                builder: (context) => const HomeTabs(),
               ),
                   (route) => false,
             );
