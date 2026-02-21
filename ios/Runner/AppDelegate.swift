@@ -15,7 +15,6 @@ import GoogleMaps
 
         // Register Flutter plugins
         GeneratedPluginRegistrant.register(with: self)
-
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 }
