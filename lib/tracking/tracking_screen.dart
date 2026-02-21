@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../core/constants/colors.dart';
-import 'package:untitled2/features/home/home_screen.dart';
+import 'package:untitled2/features/home/home_tabs.dart';
 
 class TrackingScreen extends StatefulWidget {
   const TrackingScreen({super.key});
@@ -32,6 +32,18 @@ class _TrackingScreenState extends State<TrackingScreen> {
   void initState() {
     super.initState();
     _startMidtermSimulation();
+    _loadMarkerIcon();
+  }
+
+  Future<void> _loadMarkerIcon() async {
+    final icon = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(48, 48)),
+      'assets/motorbike.png',
+    );
+
+    setState(() {
+      _motorbikeIcon = icon;
+    });
   }
 
   void _startMidtermSimulation() {
@@ -67,7 +79,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
             Navigator.of(context).pushAndRemoveUntil(
               CupertinoPageRoute(
-                builder: (context) => const HomeScreen(),
+                builder: (context) => const HomeTabs(),
               ),
                   (route) => false,
             );
@@ -100,6 +112,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
       start.longitude + (end.longitude - start.longitude) * segmentProgress,
     );
   }
+  BitmapDescriptor? _motorbikeIcon;
+
 
   @override
   Widget build(BuildContext context) {
@@ -150,8 +164,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
               Marker(
                 markerId: const MarkerId('rider'),
                 position: _getRiderPos(),
-                icon: BitmapDescriptor.defaultMarkerWithHue(
-                    BitmapDescriptor.hueAzure),
+                icon: _motorbikeIcon ?? BitmapDescriptor.defaultMarker,
               ),
             },
           ),
