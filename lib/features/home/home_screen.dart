@@ -128,7 +128,7 @@ class _Header extends StatelessWidget {
                   children: [
                     Text('DELIVER TO', style: TextStyle(color: CupertinoColors.white, fontSize: 11, fontWeight: FontWeight.w800)),
                     SizedBox(height: 2),
-                    Text('Enter an address', style: TextStyle(color: CupertinoColors.white, fontSize: 16, fontWeight: FontWeight.w900)),
+                    Text('Bahay ni Sir Ronnie', style: TextStyle(color: CupertinoColors.white, fontSize: 16, fontWeight: FontWeight.w900)),
                   ],
                 ),
               ),
